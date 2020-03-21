@@ -2528,6 +2528,10 @@ public class Driver implements IDriver {
       if (lDrvState.isAborted()) {
         LOG.info("Executing command(queryId=" + queryId + ") has been interrupted after " + duration + " seconds");
       } else {
+
+        QueryDataInfo queryDataInfo = new QueryDataInfo(plan);
+        queryDataInfo.getDataAfterCompile();
+
         LOG.info("Completed executing command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
       }
     }
