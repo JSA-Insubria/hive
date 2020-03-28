@@ -291,6 +291,7 @@ public class HadoopJobExecHelper {
 
           console
               .printInfo("Hadoop job information for " + getId() + ": " + logMapper + logReducer);
+          saveJsonFile(queryId, rj.getID().toString() + " - " + getId());
           initOutputPrinted = true;
         }
 
@@ -434,6 +435,24 @@ public class HadoopJobExecHelper {
     return mapRedStats;
   }
 
+  private void saveJsonFile(String queryID, String line) {
+    File jsonDirectory = new File(System.getProperty("user.home") + File.separator + "QueryJobID");
+    if (!jsonDirectory.exists()) {
+      jsonDirectory.mkdir();
+    }
+    if (jsonDirectory.exists()) {
+      File file = new File(jsonDirectory + File.separator + queryID + ".log");
+      FileWriter fileWriter = null;
+      try {
+        fileWriter = new FileWriter(file, true);
+        fileWriter.write(line + "\n");
+        fileWriter.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
 
   private String getId() {
     return this.task.getId();
@@ -553,12 +572,9 @@ public class HadoopJobExecHelper {
     }
 
     // add to list of running jobs to kill in case of abnormal shutdown
-
     runningJobs.add(rj);
-
     ExecDriverTaskHandle th = new ExecDriverTaskHandle(jc, rj, ctx);
     jobInfo(rj);
-    saveJsonFile(queryId, rj.getID().toString());
     MapRedStats mapRedStats = progress(th);
 
     this.task.taskHandle = th;
@@ -610,28 +626,9 @@ public class HadoopJobExecHelper {
     return returnVal;
   }
 
-  private void saveJsonFile(String queryID, String jobID) {
-    File jsonDirectory = new File(System.getProperty("user.home") + File.separator + "QueryJobID");
-    if (!jsonDirectory.exists()) {
-      jsonDirectory.mkdir();
-    }
-    if (jsonDirectory.exists()) {
-      File file = new File(jsonDirectory + File.separator + queryID + ".log");
-      FileWriter fileWriter = null;
-      try {
-        fileWriter = new FileWriter(file, true);
-        fileWriter.write(jobID + "\n");
-        fileWriter.close();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
   private void computeReducerTimeStatsPerJob(RunningJob rj) throws IOException {
     TaskCompletionEvent[] taskCompletions = rj.getTaskCompletionEvents(0);
     List<Integer> reducersRunTimes = new ArrayList<Integer>();
-
     for (TaskCompletionEvent taskCompletion : taskCompletions) {
       if (!taskCompletion.isMapTask()) {
         reducersRunTimes.add(new Integer(taskCompletion.getTaskRunTime()));
@@ -643,7 +640,6 @@ public class HadoopJobExecHelper {
     this.task.getQueryPlan().getReducerTimeStatsPerJobList().add(reducerTimeStatsPerJob);
     return;
   }
-
 
   private Map<String, Double> extractAllCounterValues(Counters counters) {
     Map<String, Double> exctractedCounters = new HashMap<String, Double>();
