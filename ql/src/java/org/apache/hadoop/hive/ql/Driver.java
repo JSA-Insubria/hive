@@ -707,6 +707,9 @@ public class Driver implements IDriver {
         }
       }
 
+      StageDependencies stageDependencies = new StageDependencies(queryId, getExplainOutput(sem, plan, tree));
+      stageDependencies.printDependencies();
+
       if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
         String explainOutput = getExplainOutput(sem, plan, tree);
         if (explainOutput != null) {
