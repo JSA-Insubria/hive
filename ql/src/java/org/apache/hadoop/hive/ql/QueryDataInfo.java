@@ -46,7 +46,7 @@ public class QueryDataInfo {
             path = mp.getValue().getPath();
             if(path != null) {
                 try {
-                    queryDataTableList.add(getFileInfo(mp.getKey(), FileContext.getFileContext(), path));
+                    queryDataTableList.add(new QueryDataTable(mp.getKey(), getFileInfo(FileContext.getFileContext(), path)));
                 } catch (UnsupportedFileSystemException e) {
                     e.printStackTrace();
                 }
@@ -55,20 +55,20 @@ public class QueryDataInfo {
         queryData.setTableList(queryDataTableList);
     }
 
-    private QueryDataTable getFileInfo(String tableName, FileContext fileContext, Path path) {
-        QueryDataTable queryDataTable = null;
+    private List<QueryDataFile> getFileInfo(FileContext fileContext, Path path) {
+        List<QueryDataFile> queryDataFileList = new ArrayList<>();
         try {
             RemoteIterator<LocatedFileStatus> remoteIterator = fileContext.listLocatedStatus(path);
             while (remoteIterator.hasNext()) {
                 LocatedFileStatus locatedFileStatus = remoteIterator.next();
                 if(locatedFileStatus.isFile()) {
-                    queryDataTable = new QueryDataTable(tableName, locatedFileStatus.toString(), getBlockInfo(locatedFileStatus.getBlockLocations()));
+                    queryDataFileList.add(new QueryDataFile(locatedFileStatus.toString(), getBlockInfo(locatedFileStatus.getBlockLocations())));
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return queryDataTable;
+        return queryDataFileList;
     }
 
     private List<QueryDataBlock> getBlockInfo(BlockLocation[] blockLocations) {
@@ -136,7 +136,6 @@ public class QueryDataInfo {
 
     private class QueryData {
         private String query;
-        //private String queryPlan;
         private List<QueryDataTable> tableList;
 
         public QueryData() {}
@@ -148,15 +147,7 @@ public class QueryDataInfo {
         public void setQuery(String query) {
             this.query = query;
         }
-/*
-        public String getQueryPlan() {
-            return queryPlan;
-        }
 
-        public void setQueryPlan(String queryPlan) {
-            this.queryPlan = queryPlan;
-        }
-*/
         public List<QueryDataTable> getTableList() {
             return tableList;
         }
@@ -168,13 +159,11 @@ public class QueryDataInfo {
 
     private class QueryDataTable {
         private String tableName;
-        private String file;
-        private List<QueryDataBlock> blockList;
+        private List<QueryDataFile> queryDataFileList;
 
-        public QueryDataTable(String tableName, String file, List<QueryDataBlock> blockList) {
+        public QueryDataTable(String tableName, List<QueryDataFile> queryDataFileList) {
             this.tableName = tableName;
-            this.file = file;
-            this.blockList = blockList;
+            this.queryDataFileList = queryDataFileList;
         }
 
         public String getTableName() {
@@ -183,6 +172,24 @@ public class QueryDataInfo {
 
         public void setTableName(String tableName) {
             this.tableName = tableName;
+        }
+
+        public List<QueryDataFile> getQueryDataFileList() {
+            return queryDataFileList;
+        }
+
+        public void setQueryDataFileList(List<QueryDataFile> queryDataFileList) {
+            this.queryDataFileList = queryDataFileList;
+        }
+    }
+
+    private class QueryDataFile {
+        private String file;
+        private List<QueryDataBlock> blockList;
+
+        public QueryDataFile(String file, List<QueryDataBlock> blockList) {
+            this.file = file;
+            this.blockList = blockList;
         }
 
         public String getFile() {
