@@ -8,6 +8,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +36,18 @@ public class QueryDataInfo {
             //queryData.setQueryPlan(queryPlan.toString());
             getTableInfo();
             saveJsonFile();
+            printTime(queryPlan.getQuery().getQueryId());
+        }
+    }
+
+    private void printTime(String line) {
+        File fileName = new File(System.getProperty("user.home") + File.separator + "QueryExecutionTime.log");
+        try {
+            FileWriter myWriter = new FileWriter(fileName, true);
+            myWriter.write(line + ": ");
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

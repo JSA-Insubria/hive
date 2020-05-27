@@ -20,13 +20,7 @@ package org.apache.hadoop.hive.cli;
 
 import static org.apache.hadoop.util.StringUtils.stringifyException;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -281,6 +275,7 @@ public class CliDriver {
           ((FetchConverter) out).fetchFinished();
         }
 
+        printTime(timeTaken + " seconds");
         console.printInfo(
             "Time taken: " + timeTaken + " seconds" + (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
       } else {
@@ -305,6 +300,17 @@ public class CliDriver {
     }
 
     return ret;
+  }
+
+  private void printTime(String line) {
+    File fileName = new File(System.getProperty("user.home") + File.separator + "QueryExecutionTime.log");
+    try {
+      FileWriter myWriter = new FileWriter(fileName, true);
+      myWriter.write(line + "\n");
+      myWriter.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   /**
