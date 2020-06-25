@@ -60,10 +60,10 @@ public class QueryDataInfo {
         stringBuilder.append(queryID).append("\n");
         long totalCpu = 0;
         for (Map.Entry<String, MapRedStats> entry : stats.entrySet()) {
-            stringBuilder.append("Stage-").append(entry.getKey()).append(": ").append(entry.getValue());
+            stringBuilder.append("Stage-").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
             totalCpu += entry.getValue().getCpuMSec();
         }
-        stringBuilder.append("Total MapReduce CPU Time Spent: ").append(Utilities.formatMsecToStr(totalCpu));
+        stringBuilder.append("Total MapReduce CPU Time Spent: ").append(Utilities.formatMsecToStr(totalCpu)).append("\n");
         return stringBuilder.toString();
     }
 
