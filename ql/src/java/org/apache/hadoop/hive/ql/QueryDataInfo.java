@@ -6,6 +6,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.mapred.Counters;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
@@ -58,12 +59,34 @@ public class QueryDataInfo {
     private String getCPUTimeString(String queryID) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(queryID).append("\n");
-        long totalCpu = 0;
+        double totalCpu = 0;
         for (Map.Entry<String, MapRedStats> entry : stats.entrySet()) {
-            stringBuilder.append("Stage-").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
-            totalCpu += entry.getValue().getCpuMSec();
+            MapRedStats mapRedStats = entry.getValue();
+            totalCpu += mapRedStats.cpuMSec / 1000D;
+            stringBuilder.append("CPU:").append(totalCpu).append(",");
+            stringBuilder.append(getHdfsRW(mapRedStats));
         }
-        stringBuilder.append("Total MapReduce CPU Time Spent: ").append(Utilities.formatMsecToStr(totalCpu)).append("\n");
+        return stringBuilder.toString();
+    }
+
+    private String getHdfsRW(MapRedStats mapRedStats) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Counters counters = mapRedStats.getCounters();
+        if (counters != null) {
+            Counters.Counter hdfsReadCntr = counters.findCounter("FileSystemCounters",
+                    "HDFS_BYTES_READ");
+            long hdfsRead;
+            if (hdfsReadCntr != null && (hdfsRead = hdfsReadCntr.getValue()) >= 0) {
+                stringBuilder.append("HDFSRead:").append(hdfsRead).append(",");
+            }
+
+            Counters.Counter hdfsWrittenCntr = counters.findCounter("FileSystemCounters",
+                    "HDFS_BYTES_WRITTEN");
+            long hdfsWritten;
+            if (hdfsWrittenCntr != null && (hdfsWritten = hdfsWrittenCntr.getValue()) >= 0) {
+                stringBuilder.append("HDFSWrite:").append(hdfsWritten);
+            }
+        }
         return stringBuilder.toString();
     }
 
