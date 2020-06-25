@@ -60,34 +60,44 @@ public class QueryDataInfo {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(queryID).append("\n");
         double totalCpu = 0;
+        long hdfsRead = 0;
+        long hdfsWrite = 0;
         for (Map.Entry<String, MapRedStats> entry : stats.entrySet()) {
             MapRedStats mapRedStats = entry.getValue();
             totalCpu += mapRedStats.cpuMSec / 1000D;
-            stringBuilder.append("CPU:").append(totalCpu).append(",");
-            stringBuilder.append(getHdfsRW(mapRedStats));
+            hdfsRead += getHdfsRead(mapRedStats);
+            hdfsWrite += getHdfsWrite(mapRedStats);
         }
+        stringBuilder.append("CPU:").append(totalCpu).append(",");
+        stringBuilder.append("HDFSRead:").append(hdfsRead).append(",");
+        stringBuilder.append("HDFSWrite:").append(hdfsWrite).append("\n");
         return stringBuilder.toString();
     }
 
-    private String getHdfsRW(MapRedStats mapRedStats) {
-        StringBuilder stringBuilder = new StringBuilder();
+    private long getHdfsRead(MapRedStats mapRedStats) {
         Counters counters = mapRedStats.getCounters();
         if (counters != null) {
             Counters.Counter hdfsReadCntr = counters.findCounter("FileSystemCounters",
                     "HDFS_BYTES_READ");
             long hdfsRead;
             if (hdfsReadCntr != null && (hdfsRead = hdfsReadCntr.getValue()) >= 0) {
-                stringBuilder.append("HDFSRead:").append(hdfsRead).append(",");
+                return hdfsRead;
             }
+        }
+        return 0;
+    }
 
+    private long getHdfsWrite(MapRedStats mapRedStats) {
+        Counters counters = mapRedStats.getCounters();
+        if (counters != null) {
             Counters.Counter hdfsWrittenCntr = counters.findCounter("FileSystemCounters",
                     "HDFS_BYTES_WRITTEN");
             long hdfsWritten;
             if (hdfsWrittenCntr != null && (hdfsWritten = hdfsWrittenCntr.getValue()) >= 0) {
-                stringBuilder.append("HDFSWrite:").append(hdfsWritten);
+                return hdfsWritten;
             }
         }
-        return stringBuilder.toString();
+        return 0;
     }
 
     private void printCPUTime(String line) {
