@@ -2532,7 +2532,7 @@ public class Driver implements IDriver {
         LOG.info("Executing command(queryId=" + queryId + ") has been interrupted after " + duration + " seconds");
       } else {
 
-        QueryDataInfo queryDataInfo = new QueryDataInfo(plan);
+        QueryDataInfo queryDataInfo = new QueryDataInfo(plan, stats);
         queryDataInfo.getDataAfterCompile();
 
         LOG.info("Completed executing command(queryId=" + queryId + "); Time taken: " + duration + " seconds");

@@ -2,6 +2,7 @@ package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -17,16 +18,18 @@ import java.util.Map;
 
 public class QueryDataInfo {
 
-    private QueryPlan queryPlan;
-    private Map<String, Table> map;
+    private final QueryPlan queryPlan;
 
-    private ObjectMapper objectMapper;
-    private QueryData queryData;
+    private final ObjectMapper objectMapper;
+    private final QueryData queryData;
 
-    public QueryDataInfo(QueryPlan queryPlan) {
+    private final Map<String, MapRedStats> stats;
+
+    public QueryDataInfo(QueryPlan queryPlan, Map<String, MapRedStats> stats) {
         this.queryPlan = queryPlan;
         objectMapper = new ObjectMapper();
         queryData = new QueryData();
+        this.stats = stats;
     }
 
     public void getDataAfterCompile() {
@@ -37,6 +40,7 @@ public class QueryDataInfo {
             getTableInfo();
             saveJsonFile();
             printTime(queryPlan.getQuery().getQueryId());
+            printCPUTime(getCPUTimeString(queryPlan.getQuery().getQueryId()));
         }
     }
 
@@ -51,9 +55,32 @@ public class QueryDataInfo {
         }
     }
 
+    private String getCPUTimeString(String queryID) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(queryID).append("\n");
+        long totalCpu = 0;
+        for (Map.Entry<String, MapRedStats> entry : stats.entrySet()) {
+            stringBuilder.append("Stage-").append(entry.getKey()).append(": ").append(entry.getValue());
+            totalCpu += entry.getValue().getCpuMSec();
+        }
+        stringBuilder.append("Total MapReduce CPU Time Spent: ").append(Utilities.formatMsecToStr(totalCpu));
+        return stringBuilder.toString();
+    }
+
+    private void printCPUTime(String line) {
+        File fileName = new File(System.getProperty("user.home") + File.separator + "QueryCPUTime.log");
+        try {
+            FileWriter myWriter = new FileWriter(fileName, true);
+            myWriter.write(line + "\n");
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void getTableInfo() {
         List<QueryDataTable> queryDataTableList = new ArrayList<>();
-        map = getTablesFromPlan(queryPlan);
+        Map<String, Table> map = getTablesFromPlan(queryPlan);
         Path path = null;
         for (Map.Entry<String, Table> mp : map.entrySet()) {
             path = mp.getValue().getPath();
