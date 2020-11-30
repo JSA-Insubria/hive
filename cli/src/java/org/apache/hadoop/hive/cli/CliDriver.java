@@ -46,8 +46,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.cli.OptionsProcessor;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
@@ -299,11 +297,20 @@ public class CliDriver {
       }
     }
 
+    ManageFiles manageFiles = new ManageFiles();
+    manageFiles.moveFiles();
+    manageFiles.deleteAllFolders();
     return ret;
   }
 
   private void printTime(String line) {
-    File fileName = new File(System.getProperty("user.home") + File.separator + "QueryExecutionTime.log");
+    File fileDir = new File(System.getProperty("user.home")
+            + File.separator + "results"
+            + File.separator + "namenode");
+    if (!fileDir.exists()) {
+      fileDir.mkdir();
+    }
+    File fileName = new File(fileDir + File.separator + "QueryExecutionTime.log");
     try {
       FileWriter myWriter = new FileWriter(fileName, true);
       myWriter.write(line + "\n");

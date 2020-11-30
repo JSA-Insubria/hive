@@ -436,7 +436,13 @@ public class HadoopJobExecHelper {
   }
 
   private void saveJsonFile(String queryID, String line) {
-    File jsonDirectory = new File(System.getProperty("user.home") + File.separator + "QueryJobID");
+    File fileDir = new File(System.getProperty("user.home")
+            + File.separator + "results"
+            + File.separator + "namenode");
+    if (!fileDir.exists()) {
+      fileDir.mkdir();
+    }
+    File jsonDirectory = new File(fileDir + File.separator + "QueryJobID");
     if (!jsonDirectory.exists()) {
       jsonDirectory.mkdir();
     }

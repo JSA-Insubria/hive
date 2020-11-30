@@ -46,7 +46,13 @@ public class QueryDataInfo {
     }
 
     private void printTime(String line) {
-        File fileName = new File(System.getProperty("user.home") + File.separator + "QueryExecutionTime.log");
+        File fileDir = new File(System.getProperty("user.home")
+                + File.separator + "results"
+                + File.separator + "namenode");
+        if (!fileDir.exists()) {
+            fileDir.mkdir();
+        }
+        File fileName = new File(fileDir + File.separator + "QueryExecutionTime.log");
         try {
             FileWriter myWriter = new FileWriter(fileName, true);
             myWriter.write(line + ": ");
@@ -101,7 +107,13 @@ public class QueryDataInfo {
     }
 
     private void printCPUTime(String line) {
-        File fileName = new File(System.getProperty("user.home") + File.separator + "QueryCPUTime.log");
+        File fileDir = new File(System.getProperty("user.home")
+                + File.separator + "results"
+                + File.separator + "namenode");
+        if (!fileDir.exists()) {
+            fileDir.mkdir();
+        }
+        File fileName = new File(fileDir + File.separator + "QueryCPUTime.log");
         try {
             FileWriter myWriter = new FileWriter(fileName, true);
             myWriter.write(line + "\n");
@@ -194,7 +206,13 @@ public class QueryDataInfo {
     }
 
     private void saveJsonFile() {
-        File jsonDirectory = new File(System.getProperty("user.home") + File.separator + "QueryDataBlocks");
+        File fileDir = new File(System.getProperty("user.home")
+                + File.separator + "results"
+                + File.separator + "namenode");
+        if (!fileDir.exists()) {
+            fileDir.mkdir();
+        }
+        File jsonDirectory = new File(fileDir + File.separator + "QueryDataBlocks");
         if (!jsonDirectory.exists()) {
             jsonDirectory.mkdir();
         }

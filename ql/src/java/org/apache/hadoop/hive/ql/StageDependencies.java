@@ -31,7 +31,13 @@ public class StageDependencies {
     }
 
     private void printIntoJobSubmitterLog(String queryId, String line) {
-        File jsonDirectory = new File(System.getProperty("user.home") + File.separator + "ExplainQuery");
+        File fileDir = new File(System.getProperty("user.home")
+                + File.separator + "results"
+                + File.separator + "namenode");
+        if (!fileDir.exists()) {
+            fileDir.mkdir();
+        }
+        File jsonDirectory = new File(fileDir + File.separator + "ExplainQuery");
         if (!jsonDirectory.exists()) {
             jsonDirectory.mkdir();
         }
